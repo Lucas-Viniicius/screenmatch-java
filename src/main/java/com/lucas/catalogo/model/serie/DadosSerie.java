@@ -5,7 +5,33 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record DadosSerie(@JsonAlias("Title") String titulo, 
-                        @JsonAlias("Season") Integer temporadas, 
+                        @JsonAlias("totalSeasons") Integer temporadas, 
                         @JsonAlias("Plot") String descricao, 
                         @JsonAlias("Year") String anoDeLancamento){
+
+    public DadosSerie{
+
+        if (descricao == null || descricao.equalsIgnoreCase("N/A")){
+            descricao = "Indisponível";
+        }
+
+        if (anoDeLancamento == null || anoDeLancamento.equalsIgnoreCase("N/A")){
+            anoDeLancamento = "Indisponível";
+        }
+        
+        if (temporadas == null){
+            temporadas = 0;
+        }
+    }
+
+    @Override
+    public String toString(){
+        return "\n************************"+
+        "\n  INFORMAÇÕES DA SÉRIE\n"+
+        "************************\n"+
+        "\nTitulo: "+titulo+
+        "\nTemporadas: "+temporadas+
+        "\nAno de lançamento: "+anoDeLancamento+
+        "\nDescrição: "+descricao+"\n";
+    }
 }
