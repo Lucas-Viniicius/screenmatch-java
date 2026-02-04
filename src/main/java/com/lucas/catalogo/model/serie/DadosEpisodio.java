@@ -6,7 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record DadosEpisodio( @JsonAlias("Title") String titulo,
                              @JsonAlias("Episode") Integer episodio,
-                             @JsonAlias("ImdbRating") Integer avaliacao,
+                             @JsonAlias("imdbRating") String avaliacao,
                              @JsonAlias("Released") String anoDeLancamento
                             ) {
     
@@ -15,8 +15,16 @@ public record DadosEpisodio( @JsonAlias("Title") String titulo,
         if (anoDeLancamento == null || anoDeLancamento.equalsIgnoreCase("N/A")){
             anoDeLancamento = "Indisponível";
         }
-        if (avaliacao == null){
-            avaliacao = 0;
+        if (avaliacao == null || avaliacao.equals("N/A")){
+            avaliacao = "0.0";
+        }
+
+        if (titulo == null || titulo.equalsIgnoreCase("N/A")){
+            titulo = "Indisponível";
+        }
+
+        if (episodio == null){
+            episodio = 0;
         }
     }
 
@@ -26,8 +34,8 @@ public record DadosEpisodio( @JsonAlias("Title") String titulo,
         "\n  INFORMAÇÕES DA EPISÓDIO\n"+
         "************************\n"+
         "\nTitulo: "+titulo+
-        "Episódio: "+episodio+
-        "Avaliação: "+avaliacao+
-        "Ano de lançamento: "+anoDeLancamento+"/n";
+        "\nEpisódio: "+episodio+
+        "\nAvaliação: "+avaliacao+
+        "\nAno de lançamento: "+anoDeLancamento+"\n";
     }
 }

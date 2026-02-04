@@ -22,6 +22,10 @@ public record DadosSerie(@JsonAlias("Title") String titulo,
         if (temporadas == null){
             temporadas = 0;
         }
+        
+        if (titulo == null || titulo.equalsIgnoreCase("N/A")){
+            titulo = "Indisponível";
+        }       
     }
 
     @Override

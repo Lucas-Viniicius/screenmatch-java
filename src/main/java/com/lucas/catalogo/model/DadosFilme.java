@@ -13,12 +13,28 @@ public record DadosFilme( @JsonAlias("Title") String titulo,
 
     public DadosFilme{
 
-        if (atores == null || atores.equalsIgnoreCase("N/A")){
+        if (atores == null || atores.equalsIgnoreCase("N/A")) {
             atores = "Não encontrado";
         }
 
-        if (descricao == null || descricao.equalsIgnoreCase("N/A")){
-            descricao ="Indisponivel";
+        if (descricao == null || descricao.equalsIgnoreCase("N/A")) {
+            descricao = "Indisponível";
+        }
+
+        if (linguasDisponiveis == null || linguasDisponiveis.equalsIgnoreCase("N/A")) {
+            linguasDisponiveis = "Não informado";
+        }
+
+        if (duracao == null || duracao.equalsIgnoreCase("N/A")) {
+            duracao = "Duração desconhecida";
+        }
+
+        if (anoDeLancamento == null || anoDeLancamento.equalsIgnoreCase("N/A")) {
+            anoDeLancamento = "Ano não informado";
+        }
+
+        if (titulo == null || titulo.equalsIgnoreCase("N/A")) {
+            titulo = "Título não disponível";
         }
     }
 
