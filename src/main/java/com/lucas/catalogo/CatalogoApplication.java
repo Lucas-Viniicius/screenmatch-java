@@ -4,6 +4,8 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import com.lucas.catalogo.principal.MainCatalogo;
+
 @SpringBootApplication
 public class CatalogoApplication implements CommandLineRunner{
 
@@ -13,6 +15,7 @@ public class CatalogoApplication implements CommandLineRunner{
 
 	@Override
 	public void run(String... agrs)throws Exception{
-		
+		MainCatalogo main = new MainCatalogo();
+		main.principalCatalogo();
 	}
 }

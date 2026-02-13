@@ -1,5 +1,7 @@
 package com.lucas.catalogo.principal;
 
+import java.util.ArrayList;
+import java.util.DoubleSummaryStatistics;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
@@ -13,10 +15,12 @@ import com.lucas.catalogo.service.Conversor;
 
 public class MainCatalogo {
 
-    private static Scanner input = new Scanner(System.in);
+    private Scanner input = new Scanner(System.in);
 
-    private static final String ENDERECO = "https://www.omdbapi.com/?t=";
-    private static final String API_KEY = "&apikey=6585022c";
+    private final String ENDERECO = "https://www.omdbapi.com/?t=";
+    private final String API_KEY = "&apikey=6585022c";
+
+    private List<DadosTemporada> listaTemporadas = new ArrayList<>();
 
     
     public static void limpaTela() {
@@ -25,7 +29,7 @@ public class MainCatalogo {
     }
 
 
-    public static void bannerEntrada(){
+    public void bannerEntrada(){
         System.out.println("""
 
             ╔════════════════════════════════════════════════╗
@@ -38,7 +42,7 @@ public class MainCatalogo {
             """);
     }
 
-    public static void bannerEncerramento(){
+    public void bannerEncerramento(){
         limpaTela();
         System.out.println("""
 
@@ -51,7 +55,7 @@ public class MainCatalogo {
     }
 
 
-    public static String confirmacao(String novamente){
+    public String confirmacao(String novamente){
 
         if(novamente.equalsIgnoreCase("sim")){
             return "sim";
@@ -63,7 +67,7 @@ public class MainCatalogo {
         }
     }
 
-    public static void main(String[]args){
+    public void principalCatalogo(){
 
         ApiRest api = new ApiRest();
         Conversor conversor = new Conversor();
@@ -77,14 +81,15 @@ public class MainCatalogo {
 
         while (continuar.equalsIgnoreCase("sim")){
 
-            System.out.println("====================================");
-            System.out.println("        MENU PRINCIPAL");
-            System.out.println("====================================");
+            System.out.println("===================================");
+            System.out.println("          MENU PRINCIPAL");
+            System.out.println("===================================");
             System.out.println("1️⃣  Pesquisar FILMES");
             System.out.println("2️⃣  Pesquisar SÉRIES");
             System.out.println("3️⃣  Pesquisar EPISÓDIOS");
-            System.out.println("4️⃣  SAIR");
-            System.out.println("====================================");
+            System.out.println("4️⃣  Avaliação por TEMPORADA");
+            System.out.println("5️⃣  Estatística da série");
+            System.out.println("===================================");
 
             int opcaoMenu;
 
@@ -201,6 +206,100 @@ public class MainCatalogo {
                     break;
 
                 case 4:
+                    limpaTela();
+                    System.out.print("Digite o nome da série: ");
+                    String nomeAvaliacao = input.nextLine();
+                    String jsonAvaliacao = api.pesquisar( ENDERECO + nomeAvaliacao.trim().replace(" ", "+") + API_KEY);
+                    DadosSerie dadosAvaliacao = conversor.conversor(jsonAvaliacao, DadosSerie.class);
+
+                    for(int i = 1; i <= dadosAvaliacao.temporadas(); i++){
+                        String avaliacao = api.pesquisar(ENDERECO + nomeAvaliacao.trim().replace(" ", "+") + "&season=" + i + API_KEY);
+                        DadosTemporada avaliacaoConvertida = conversor.conversor(avaliacao, DadosTemporada.class);
+                        listaTemporadas.add(avaliacaoConvertida);
+                    }
+
+                    System.out.println(" "); // pula uma linha
+
+                    for (DadosTemporada temporadaEm : listaTemporadas) {
+
+                        double media = temporadaEm.listaEpisodios().stream()
+                            .mapToDouble(e -> Double.parseDouble(e.avaliacao())) // converte a avaliação do episódio (String) para double
+                            .filter(avaliacao -> avaliacao > 0.0) // mantém apenas avaliações válidas (maiores que 0.0)
+                            .average() // calcula a média dos valores que passaram pelo filtro
+                            .orElse(0.0); // retorna 0.0 caso não exista nenhuma avaliação válida (Option)
+
+                        System.out.printf("Temporada " +temporadaEm.temporada()+ ": %.1f%n", media);
+                    }
+                    
+                    while(true){
+                        System.out.print("\nDeseja avaliar outra série ? (sim/nao) ");
+                        String opcao = input.nextLine();
+                        continuar = confirmacao(opcao);
+                        if(!continuar.equalsIgnoreCase("sim") && !continuar.equalsIgnoreCase("nao")){
+                            System.out.println("***Digite apenas (SIM / NAO)***");
+                        }else{
+                            break;
+                        }
+                    }
+
+                    if(continuar.equalsIgnoreCase("nao")){
+                        limpaTela();
+                        bannerEncerramento();
+                        break;
+                    }else{
+                        // continuar = "sim";
+                        limpaTela();
+                    }
+                    break;
+
+
+                case 5:
+                    limpaTela();
+                    System.out.print("Digite o nome da série: ");
+                    String estSerie = input.nextLine();
+                    String jsonEst = api.pesquisar( ENDERECO + estSerie.trim().replace(" ", "+") + API_KEY);
+                    DadosSerie serieEst = conversor.conversor(jsonEst, DadosSerie.class);
+
+                    for(int i = 1; i<serieEst.temporadas(); i++){
+                        String jsonEstatistica = api.pesquisar(ENDERECO + estSerie.trim().replace(" ", "+") + "&season=" + i + API_KEY);
+                        DadosTemporada estatisticaSerie = conversor.conversor(jsonEstatistica, DadosTemporada.class);
+                        listaTemporadas.add(estatisticaSerie);
+                    }
+
+                    DoubleSummaryStatistics est = listaTemporadas.stream()
+                                                .flatMap(t -> t.listaEpisodios().stream()) 
+                                                .filter(e -> !e.avaliacao().equals("N/A")) 
+                                                .mapToDouble(e -> Double.parseDouble(e.avaliacao())) 
+                                                .summaryStatistics(); 
+
+                    limpaTela();
+                    System.out.printf("Média: %.2f \n", est.getAverage());
+                    System.out.printf("Maior nota: %.2f \n", est.getMax());
+                    System.out.printf("Menor nota: %.2f \n", est.getMin());
+
+                    while(true){
+                        System.out.print("\nDeseja avaliar outra série ? (sim/nao) ");
+                        String opcao = input.nextLine();
+                        continuar = confirmacao(opcao);
+                        if(!continuar.equalsIgnoreCase("sim") && !continuar.equalsIgnoreCase("nao")){
+                            System.out.println("***Digite apenas (SIM / NAO)***");
+                        }else{
+                            break;
+                        }
+                    }
+
+                    if(continuar.equalsIgnoreCase("nao")){
+                        limpaTela();
+                        bannerEncerramento();
+                        break;
+                    }else{
+                        // continuar = "sim";
+                        limpaTela();
+                    }
+                    break;
+                    
+                    
+                case 6:
                     limpaTela();
                     bannerEncerramento();
 
