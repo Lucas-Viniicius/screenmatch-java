@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.DoubleSummaryStatistics;
 import java.util.InputMismatchException;
 import java.util.List;
+import java.util.Optional;
 import java.util.Scanner;
 
 import com.lucas.catalogo.model.DadosFilme;
@@ -55,17 +56,29 @@ public class MainCatalogo {
     }
 
 
-    public String confirmacao(String novamente){
-
-        if(novamente.equalsIgnoreCase("sim")){
-            return "sim";
-        }
-        else if(novamente.equalsIgnoreCase("nao")){
-            return "nao";
-        }else{
-            return "diferente";
+    public String usarNovamente(){
+        while(true){
+            System.out.print("\nDeseja voltar ao menu ? (sim/nao) ");
+            String opcao = input.nextLine();
+            if(!opcao.equalsIgnoreCase("sim") && !opcao.equalsIgnoreCase("nao")){
+                System.out.println("***Digite apenas (sim / nao)***");
+            }else{
+                return opcao;
+            }
         }
     }
+
+
+    public void verificaContinuar(String opcaoContinuar){
+        if(opcaoContinuar.equalsIgnoreCase("nao")){
+            limpaTela();
+            bannerEncerramento();
+        }else{
+            // continuar = "sim";
+            limpaTela();
+        }
+    }
+    
 
     public void principalCatalogo(){
 
@@ -89,6 +102,7 @@ public class MainCatalogo {
             System.out.println("3️⃣  Pesquisar EPISÓDIOS");
             System.out.println("4️⃣  Avaliação por TEMPORADA");
             System.out.println("5️⃣  Estatística da série");
+            System.out.println("6️⃣  SAIR");
             System.out.println("===================================");
 
             int opcaoMenu;
@@ -108,109 +122,139 @@ public class MainCatalogo {
             switch(opcaoMenu){
                 case 1:
                     limpaTela();
-                    System.out.print("Digite o nome do filme: ");
-                    String filme = input.nextLine();
-                    String jsonFilme = api.pesquisar(ENDERECO+filme.trim().replace(" ","+")+API_KEY);
-                    DadosFilme informacoesFilme = conversor.conversor(jsonFilme, DadosFilme.class);
-                    System.out.println(informacoesFilme.toString());
-
                     while(true){
-                        System.out.print("\nDeseja ver outro filme ? (sim/nao) ");
-                        String opcao = input.nextLine();
-                        continuar = confirmacao(opcao);
-                        if(!continuar.equalsIgnoreCase("sim") && !continuar.equalsIgnoreCase("nao")){
-                            System.out.println("***Digite apenas (SIM / NAO)***");
-                        }else{
+                        System.out.print("Digite o nome do filme: ");
+                        String filme = input.nextLine();
+                        if (filme.isBlank()){
+                            System.out.println("\n***Digite um nome de Filme válido***\n");
+                            continue;
+                        }
+                        try{
+                            String jsonFilme = api.pesquisar(ENDERECO+filme.trim().replace(" ","+")+API_KEY);
+                            DadosFilme informacoesFilme = conversor.conversor(jsonFilme, DadosFilme.class);
+                            System.out.println(informacoesFilme.toString());
+                            break;
+                        }catch(RuntimeException e){
+                            System.out.println("\n***Filme não encontrado***\n");
                             break;
                         }
                     }
+                    continuar = usarNovamente();
+                    verificaContinuar(continuar);
 
-                    if(continuar.equalsIgnoreCase("nao")){
-                        limpaTela();
-                        bannerEncerramento();
-                        break;
-                    }else{
-                        // continuar = "sim";
-                        limpaTela();
-                    }
                     break;
                     
-
                 case 2:
                     limpaTela();
-                    System.out.print("Digite o nome da série: ");
-                    String serie = input.nextLine();
-                    String jsonSerie = api.pesquisar(ENDERECO+serie.trim().replace(" ", "+")+API_KEY);
-                    DadosSerie informacoesSerie = conversor.conversor(jsonSerie, DadosSerie.class);
-                    System.out.println(informacoesSerie.toString());
-
                     while(true){
-                        System.out.print("\nDeseja ver outra série ? (sim/nao) ");
-                        String opcao = input.nextLine();
-                        continuar = confirmacao(opcao);
-                        if(!continuar.equalsIgnoreCase("sim") && !continuar.equalsIgnoreCase("nao")){
-                            System.out.println("***Digite apenas (SIM / NAO)***");
-                        }else{
+                        System.out.print("Digite o nome da série: ");
+                        String serie = input.nextLine();
+                        if(serie.isBlank()){
+                            System.out.println("\n***Digite o nome de uma série válida***\n");
+                            continue;
+                        }
+                        try{
+                            String jsonSerie = api.pesquisar(ENDERECO+serie.trim().replace(" ", "+")+API_KEY);
+                            DadosSerie informacoesSerie = conversor.conversor(jsonSerie, DadosSerie.class);
+                            System.out.println(informacoesSerie.toString());     
+                            break;                         
+                        }catch(RuntimeException e){
+                            System.out.println("\n***Série não encontrada***\n");
                             break;
                         }
                     }
 
-                    if(continuar.equalsIgnoreCase("nao")){
-                        limpaTela();
-                        bannerEncerramento();
-                        break;
-                    }else{
-                        // continuar = "sim";
-                        limpaTela();
-                    }
+                    continuar = usarNovamente();
+                    verificaContinuar(continuar);
+
                     break;
                 
                 case 3:
                     limpaTela();
-                    System.out.print("Digite o nome da série: ");
-                    String nomeSerie = input.nextLine();
-                    System.out.print("Digite a temporada: ");
-                    Integer temporada = input.nextInt();
-                    input.nextLine(); // conssumo enter
-                    String jsonTemporada = api.pesquisar(ENDERECO + nomeSerie.trim().replace(" ", "+") + "&season=" + temporada + API_KEY);
-                    DadosTemporada dadosTemporada = conversor.conversor(jsonTemporada, DadosTemporada.class);
-                    System.out.print("Digite o número do episódio: ");
-                    Integer numeroEp = input.nextInt();
-                    input.nextLine();
-                    
-                    List<DadosEpisodio> episodios = dadosTemporada.listaEpisodios();
-                    
-                    episodios.stream() // crie um fluxo com todos os episódios
-                            .filter(e -> e.episodio().equals(numeroEp)) // só deixe passar os episódios ou o episódio que for igual ao numeroEp
-                            .forEach(e -> System.out.println(e.toString())); // para cada episódio que passou, mostre os dados com o toString
 
+                    Integer temporada; 
+                    String nomeSerie; 
                     while(true){
-                        System.out.print("\nDeseja ver outro episódio ? (sim/nao) ");
-                        String opcao = input.nextLine();
-                        continuar = confirmacao(opcao);
-                        if(!continuar.equalsIgnoreCase("sim") && !continuar.equalsIgnoreCase("nao")){
-                            System.out.println("***Digite apenas (SIM / NAO)***");
+                        System.out.print("Digite o nome da série: ");
+                        nomeSerie = input.nextLine();
+                        if(nomeSerie.isBlank()){ // verifica se a string não esta vazia
+                            System.out.println("\n***Digite o nome de uma série válida***\n");
+                            continue;
                         }else{
                             break;
                         }
                     }
+                    while(true){
+                        try{
+                            System.out.print("Digite a temporada: ");
+                            temporada = input.nextInt();
+                            input.nextLine(); // limpa o buffer 
+                            break;                   
+                        }catch(InputMismatchException e){
+                            System.out.println("\n***Digite apenas números***\n");
+                            input.nextLine(); // limpa o buffer
+                            continue;
+                        }                         
+                    }                  
+                    try{
+                        String jsonTemporada = api.pesquisar(ENDERECO + nomeSerie.trim().replace(" ", "+") + "&season=" + temporada + API_KEY);
+                        DadosTemporada dadosTemporada = conversor.conversor(jsonTemporada, DadosTemporada.class);
 
-                    if(continuar.equalsIgnoreCase("nao")){
-                        limpaTela();
-                        bannerEncerramento();
-                        break;
-                    }else{
-                        // continuar = "sim";
-                        limpaTela();
-                    }
+                        while(true){
+                            try{
+                                System.out.print("Digite o número do episódio: ");
+                                Integer numeroEp = input.nextInt();
+                                input.nextLine();
+                                Optional<DadosEpisodio> episodios = dadosTemporada.listaEpisodios().stream() // crie um fluxo com todos os episódios
+                                        .filter(e -> e.episodio().equals(numeroEp)) // só deixe passar os episódios ou o episódio que for igual ao numeroEp
+                                        .findFirst(); // pega o primeiro elemento que passou pelo filtro e retorna um Optional
+
+                                        if(episodios.isPresent()){
+                                            System.out.println(episodios.get());
+                                            break;
+                                        }else{
+                                            System.out.println("\n***Epoisódio não encontrado***\n");
+                                        }                                
+                                }catch(InputMismatchException e){
+                                    System.out.println("\n***Digite apenas números***\n");
+                                    input.nextLine();
+                                }
+                        }
+                        }catch(RuntimeException e){
+                            System.out.println("\n***Série não encontrada***\n");
+                        }
+                    continuar = usarNovamente();
+                    verificaContinuar(continuar);
+
                     break;
 
                 case 4:
                     limpaTela();
-                    System.out.print("Digite o nome da série: ");
-                    String nomeAvaliacao = input.nextLine();
-                    String jsonAvaliacao = api.pesquisar( ENDERECO + nomeAvaliacao.trim().replace(" ", "+") + API_KEY);
-                    DadosSerie dadosAvaliacao = conversor.conversor(jsonAvaliacao, DadosSerie.class);
+                    listaTemporadas.clear(); // limpa a lista
+
+                    String nomeAvaliacao;
+                    String jsonAvaliacao;
+                    DadosSerie dadosAvaliacao = null;
+                    while(true){
+                        System.out.print("Digite o nome da série: ");
+                        nomeAvaliacao = input.nextLine();
+                        if(nomeAvaliacao.isBlank()){
+                            System.out.println("\n***Digite o nome de uma série válida***\n");
+                            continue;
+                        }else{
+                            break;
+                        }
+                    }
+                    try{
+                        jsonAvaliacao = api.pesquisar( ENDERECO + nomeAvaliacao.trim().replace(" ", "+") + API_KEY);
+                        dadosAvaliacao = conversor.conversor(jsonAvaliacao, DadosSerie.class);
+                            
+                    }catch(RuntimeException e){
+                        System.out.println("\n***Série não encontrada***\n");
+                        continuar = usarNovamente();
+                        verificaContinuar(continuar);
+                        break; // sai do case 4
+                    }
 
                     for(int i = 1; i <= dadosAvaliacao.temporadas(); i++){
                         String avaliacao = api.pesquisar(ENDERECO + nomeAvaliacao.trim().replace(" ", "+") + "&season=" + i + API_KEY);
@@ -231,77 +275,67 @@ public class MainCatalogo {
                         System.out.printf("Temporada " +temporadaEm.temporada()+ ": %.1f%n", media);
                     }
                     
-                    while(true){
-                        System.out.print("\nDeseja avaliar outra série ? (sim/nao) ");
-                        String opcao = input.nextLine();
-                        continuar = confirmacao(opcao);
-                        if(!continuar.equalsIgnoreCase("sim") && !continuar.equalsIgnoreCase("nao")){
-                            System.out.println("***Digite apenas (SIM / NAO)***");
-                        }else{
-                            break;
-                        }
-                    }
+                    continuar = usarNovamente();
+                    verificaContinuar(continuar);
 
-                    if(continuar.equalsIgnoreCase("nao")){
-                        limpaTela();
-                        bannerEncerramento();
-                        break;
-                    }else{
-                        // continuar = "sim";
-                        limpaTela();
-                    }
                     break;
-
-
+                    
                 case 5:
                     limpaTela();
-                    System.out.print("Digite o nome da série: ");
-                    String estSerie = input.nextLine();
-                    String jsonEst = api.pesquisar( ENDERECO + estSerie.trim().replace(" ", "+") + API_KEY);
-                    DadosSerie serieEst = conversor.conversor(jsonEst, DadosSerie.class);
+                    listaTemporadas.clear(); // limpa a lista
 
-                    for(int i = 1; i<serieEst.temporadas(); i++){
+                    String estSerie;
+                    while(true){
+                        System.out.print("Digite o nome da série: ");
+                        estSerie = input.nextLine(); 
+                        if(estSerie.isBlank()){
+                            System.out.println("\n***Digite o nome de uma série válida***\n");
+                            continue;
+                        }else{
+                            break;
+                        }                     
+                    }
+
+                    DadosSerie serieEst = null;
+                    try{
+                        String jsonEst = api.pesquisar( ENDERECO + estSerie.trim().replace(" ", "+") + API_KEY);
+                        serieEst = conversor.conversor(jsonEst, DadosSerie.class); 
+                        if(serieEst == null){
+                            break;
+                        }                   
+                    }catch(RuntimeException e){
+                        System.out.println("\n***Série não encontrada***\n");
+                        continuar = usarNovamente();
+                        verificaContinuar(continuar);
+                    }
+
+                    for(int i = 1; i <= serieEst.temporadas(); i++){
                         String jsonEstatistica = api.pesquisar(ENDERECO + estSerie.trim().replace(" ", "+") + "&season=" + i + API_KEY);
                         DadosTemporada estatisticaSerie = conversor.conversor(jsonEstatistica, DadosTemporada.class);
                         listaTemporadas.add(estatisticaSerie);
                     }
 
                     DoubleSummaryStatistics est = listaTemporadas.stream()
-                                                .flatMap(t -> t.listaEpisodios().stream()) 
-                                                .filter(e -> !e.avaliacao().equals("N/A")) 
-                                                .mapToDouble(e -> Double.parseDouble(e.avaliacao())) 
-                                                .summaryStatistics(); 
+                                                .flatMap(t -> t.listaEpisodios().stream()) // pega todos os episódios de todas as temporadas e coloca dentro de um caixa
+                                                .filter(e -> !e.avaliacao().equals("N/A")) // filtre todas as avaliações que não sejam N/A (mas não é preciso, pois ja trasformie isso em 0.0 la no record)
+                                                .mapToDouble(e -> Double.parseDouble(e.avaliacao())) // trasforme esses episódios.avaliacão() em numeros do tipo double
+                                                .filter(avaliacao -> avaliacao > 0.0) // porque não e.avaliacao, isso porque o mapToDouble "trasformou o objeto todo" em um número do tipo double
+                                                .summaryStatistics(); // calcula a média, min, max, soma de todas as avaliações, dentre outras coisas
 
                     limpaTela();
                     System.out.printf("Média: %.2f \n", est.getAverage());
                     System.out.printf("Maior nota: %.2f \n", est.getMax());
                     System.out.printf("Menor nota: %.2f \n", est.getMin());
 
-                    while(true){
-                        System.out.print("\nDeseja avaliar outra série ? (sim/nao) ");
-                        String opcao = input.nextLine();
-                        continuar = confirmacao(opcao);
-                        if(!continuar.equalsIgnoreCase("sim") && !continuar.equalsIgnoreCase("nao")){
-                            System.out.println("***Digite apenas (SIM / NAO)***");
-                        }else{
-                            break;
-                        }
-                    }
+                    continuar = usarNovamente();
+                    verificaContinuar(continuar);
 
-                    if(continuar.equalsIgnoreCase("nao")){
-                        limpaTela();
-                        bannerEncerramento();
-                        break;
-                    }else{
-                        // continuar = "sim";
-                        limpaTela();
-                    }
                     break;
-                    
-                    
+
                 case 6:
                     limpaTela();
                     bannerEncerramento();
+                    return;
 
                 default:
                     limpaTela();

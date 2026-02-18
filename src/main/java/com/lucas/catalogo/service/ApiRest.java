@@ -22,7 +22,7 @@ public class ApiRest {
         try{
             resposta = client.send(request, HttpResponse.BodyHandlers.ofString());
         }catch(Exception e){
-            throw new RuntimeException(e);
+            throw new RuntimeException("ERRO AO CONSUMIR API OMDB", e);
         }
 
         String json = resposta.body();
