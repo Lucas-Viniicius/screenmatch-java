@@ -323,9 +323,10 @@ public class MainCatalogo {
                                                 .summaryStatistics(); // calcula a média, min, max, soma de todas as avaliações, dentre outras coisas
 
                     limpaTela();
-                    System.out.printf("Média: %.2f \n", est.getAverage());
-                    System.out.printf("Maior nota: %.2f \n", est.getMax());
-                    System.out.printf("Menor nota: %.2f \n", est.getMin());
+                    System.out.println("ESTATÍSTICA DOS EPISÓDIOS DA SÉRIE\n");
+                    System.out.printf("Episódio com a maior nota: %.2f \n", est.getMax());
+                    System.out.printf("Episódio com a menor nota: %.2f \n", est.getMin());
+                    System.out.printf("Média das notas dos episódios: %.2f \n", est.getAverage());
 
                     continuar = usarNovamente();
                     verificaContinuar(continuar);

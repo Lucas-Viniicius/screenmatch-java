@@ -4,7 +4,8 @@ import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record DadosFilme( @JsonAlias("Title") String titulo, 
+public record DadosFilme( @JsonAlias("Title") String titulo,
+                        @JsonAlias("Genre") String genero,
                         @JsonAlias("Plot") String descricao, 
                         @JsonAlias("Actors") String atores,
                         @JsonAlias("Language") String linguasDisponiveis,
@@ -36,14 +37,19 @@ public record DadosFilme( @JsonAlias("Title") String titulo,
         if (titulo == null || titulo.equalsIgnoreCase("N/A")) {
             titulo = "Título não disponível";
         }
+
+        if(genero == null || genero.equalsIgnoreCase("N/A")){
+            genero = "Genero não disponível";
+        }
     }
 
     @Override
     public String toString(){
         return "\n************************"+
-        "\n  INFORMAÇÕES DA FILME\n"+
+        "\n  INFORMAÇÕES DO FILME\n"+
         "************************\n"+
         "\nNome: "+titulo+
+        "\nGenero: "+genero+
         "\nDuração: "+duracao+
         "\nAno de Lançamento: "+anoDeLancamento+
         "\nDescrição: "+descricao+

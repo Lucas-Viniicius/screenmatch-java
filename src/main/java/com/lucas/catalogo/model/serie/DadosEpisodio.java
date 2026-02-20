@@ -31,7 +31,7 @@ public record DadosEpisodio( @JsonAlias("Title") String titulo,
     @Override
     public String toString(){
         return "\n***************************"+
-        "\n  INFORMAÇÕES DA EPISÓDIO\n"+
+        "\n  INFORMAÇÕES DO EPISÓDIO\n"+
         "***************************\n"+
         "\nTitulo: "+titulo+
         "\nEpisódio: "+episodio+

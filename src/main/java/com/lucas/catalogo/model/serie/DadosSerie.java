@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public record DadosSerie(@JsonAlias("Title") String titulo, 
                         @JsonAlias("totalSeasons") Integer temporadas, 
+                        @JsonAlias("Genre") String genero,
                         @JsonAlias("Plot") String descricao, 
                         @JsonAlias("Year") String anoDeLancamento){
 
@@ -25,7 +26,11 @@ public record DadosSerie(@JsonAlias("Title") String titulo,
         
         if (titulo == null || titulo.equalsIgnoreCase("N/A")){
             titulo = "Indisponível";
-        }       
+        }   
+        
+        if(genero == null || genero.equalsIgnoreCase("N/A")){
+            genero = "Genero não disponível";
+        }
     }
 
     @Override
@@ -35,6 +40,7 @@ public record DadosSerie(@JsonAlias("Title") String titulo,
         "************************\n"+
         "\nTitulo: "+titulo+
         "\nTemporadas: "+temporadas+
+        "\nGenero: "+genero+
         "\nAno de lançamento: "+anoDeLancamento+
         "\nDescrição: "+descricao+"\n";
     }
